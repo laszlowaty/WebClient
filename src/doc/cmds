@@ -1,0 +1,312 @@
+addstat
+    Komenda ta służy do modyfikowania własnych statystyk.
+    Sposobu uzycia:
+    addstat <argument>.
+    gdzie argumenty to:
+      show - pokazuje ile punktów masz do dyspozycji .
+      str - dodaje jeden punkt do siły,
+      int - inteligencji,
+      wis - wiedzy,
+      dex - zreczności,
+      con - kondycji,
+      cha - charyzmy,
+      luc - szczęścia.
+      skill <argument> - wydaje odpowiednią ilość punktów na podniesienie danej umiejętności <argument> o 1.
+      spell <argument> - wydaje odpowiednią ilość punktów na podniesienie danego zaklęcia <argument> o 1.
+
+affects
+    Komenda pokazuje listę czarów jakie aktualnie działają na ciebie z krótką informacją o działaniu czaru i czasie trwania.
+
+aid <ofiara>
+    Nazwa:    FIRST AID
+    Typ:      umiejętność pasywna
+    Składnia: aid <ofiara>
+    Kleryk używając tej umiejętności może próbować uleczyć najświeższe rany odniesione przez postać w czasie ostatniej walki.
+    Dostępne dla: kleryka.
+
+alias
+    alias
+    alias <nazwa>
+    alias <nazwa> <podstawienie>
+    unalias <nazwa>
+    Komenda ta jest przydatna do tworzenia skróconych wersji często używanych
+    komend. Przykłady:
+
+    alias gc get all ciało --> wpisanie gc da ten sam efekt co 'get all corpse'
+    alias ff cast 'fireball' --> ff ork będzie równoważne 'cast 'fireball' orc'
+
+    Aliasy nie mogą wywoływać innych aliasów, ani nie mogą wywoływać więcej
+    niż jednej komendy. Aktualną listę aliasów można zobaczyć wpisując 'alias'.
+    Alias <tekst> <podstawienie> służy do definiowania nowego lub podmieniania
+    starego aliasa na podany tekst. Komendą unalias można usunąć jakiś
+    zdefiniowany wcześniej alias. Nazwy aliasów muszą być jednowyrazowe.
+
+    Liczba aliasów dla każdej postaci jest ograniczona do 60.
+
+ask
+    ASK jest bardzo podobny do TELL, z tą jednak róznicą, że gracz zamiast
+    'mówi' widzi 'pyta'. Ten sam efekt można osiągnać dzięki wstawianiu '?' na
+    końcu wiadomości 'tell'.
+
+assist
+    assist
+    assist <postac>
+    Komenda ta służy do dołączenia się do walki prowadzonej przez członków twojej drużyny.
+    Zobacz także: group.
+
+aura
+    Nazwa:    DEMON AURA
+    Typ:      umiejętność defensywna
+    Składnia: aura
+
+    Czarny rycerz przed walką może wznieść modły do swych mrocznych bogów, by
+    uzyskać ich błogosławieństwo. Otoczony demoniczną aurą czarny rycerz jest
+    trudnym przeciwnikiem, ale także uciążliwym sojusznikiem dla wszystkich
+    dobrych istot znajdujących się w pobliżu.
+
+    Dostępne dla: czarnego rycerza.
+
+backstab
+    Nazwa:    BACKSTAB
+    Typ:      umiejętność ofensywna
+    Składnia: backstab <ofiara> lub
+              bs <ofiara>
+
+    Przebiegły złodziej wyposażony w sztylet może zakraść się za plecy swojej
+    ofiary i wbić jej sztylet między łopatki. Taki cios zadaje olbrzymie obrażenia
+    i może natychmiast zakończyć żywot ofiary łotrzyka.
+
+    Dostępne dla: złodzieja.
+
+bandage
+    Nazwa:    BANDAGE
+    Typ:      umiejętność
+    Składnia: bandage <ofiara>
+
+    Aby szybciej wylizać się z ran odniesionych w walce można założyć sobie lub
+    swoim sojusznikom opatrunek, lecz należy uważać, niedoświadczeni medycy mogą
+    jedynie pogorszyć stan zdrowia swój lub przyjaciela.
+    Aby wykonać opatrunek należy go trzymać w dłoni.
+
+    Dostępne dla: wszystkich.
+
+bash
+berserk
+bladedance
+bladefury
+bounty
+brandish
+bug
+buy
+call
+carve
+cast
+charge
+circle
+claninfo
+clans
+clanstate
+clantell
+clantrophy
+cleave
+close
+color
+colour
+commands
+condition
+config
+connect
+consider
+control
+credits
+critical
+ctell
+damage
+damn
+delete
+demote
+deposit
+description
+devour
+disarm
+dismount
+display
+dodge
+drag
+drink
+drop
+eat
+embedstone
+empty
+enchanting
+enter
+envenom
+equipment
+estimate
+examine
+exil
+exile
+exits
+feed
+fill
+flee
+flurry
+follow
+friend
+gainstone
+gamble
+get
+give
+go
+grip
+group
+gtell
+healing
+help
+herbs
+hide
+hit
+hoard
+hold
+horn
+hustle
+ide
+idea
+identify
+ignore
+illuminate
+inflect
+initiate
+introduce
+inventory
+kick
+kill
+knock
+languages
+lay
+learn
+leav
+leave
+levels
+list
+listen
+lock
+look
+lore
+makecamp
+map
+meditation
+memorize
+mend
+mighty
+mine
+mob
+motd
+mount
+mudinfo
+newbie
+news
+offer
+open
+order
+overwhelmingparry
+peek
+persuasion
+pick
+pipe
+play
+pour
+power
+pray
+promote
+prompt
+put
+quaff
+quit
+rarelist
+read
+recite
+recuperate
+remove
+rent
+repair
+replay
+reply
+rescue
+reservation
+rest
+reverse
+reward
+roast
+rules
+sanct
+sap
+save
+say
+sayto
+scan
+score
+searchwood
+sell
+sharpen
+shout
+sit
+skills
+skin
+slam
+sleep
+smite
+sneak
+socials
+speak
+spells
+split
+stand
+steal
+story
+study
+stun
+surrender
+take
+target
+tattoo
+taxes
+tell
+throw
+time
+title
+torment
+touch
+track
+trap
+tricks
+trip
+trophy
+try
+tune
+turn
+typ
+typo
+unalias
+uncloak
+uncurse
+unhoard
+unlock
+unsneak
+use
+value
+vertical
+visible
+wake
+wardance
+water
+wear
+weather
+whirlwind
+who
+wield
+withdraw
+wizkomendy
+write
+yell
+zap

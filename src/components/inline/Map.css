@@ -1,0 +1,43 @@
+.map {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  width: 220px;
+  height: 220px;
+  box-sizing: content-box;
+  border: 1px solid #888;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.map .row {
+  display: block;
+  height: 20px;
+  overflow: hidden;
+}
+
+.map .room {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  overflow: hidden;
+  padding: 0;
+}
+
+.room.empty {
+  background-color: transparent;
+}
+.room.building {
+  background-color: coral;
+}
+.room.road {
+  background-color: dimgray;
+}
+.room.forest {
+  background-color: darkgreen;
+}
+.room.player {
+  background-color: antiquewhite;
+}
