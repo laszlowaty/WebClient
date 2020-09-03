@@ -49,3 +49,39 @@ export type ConnSettings = {
   proxyHost: string,
   proxyPort: string,
 }
+
+export type CaptureRequest = {
+  command: string,
+  startTrigger: RegExp,
+  cancelTrigger: RegExp,
+  callback: Function,
+}
+
+export type Capture = {
+  request: CaptureRequest,
+  response: CaptureResponse,
+}
+
+export type CaptureResponse = {
+  lines: Array<ConsoleLine>,
+  hadScrollMsg: boolean,
+}
+
+export type CaptureResponseAck = {
+  unwantedLines: Array<ConsoleLine>,
+}
+
+export type MessageTrigger = {
+  expression: RegExp,
+  scope: 'match' | 'line' | 'block',
+  source: 'raw' | 'text'
+  callback: Function,
+}
+
+export type MessageTriggerResponse = {
+  match: string,
+}
+
+export type MessageTriggerResponseAck = {
+  replacement: string | null,
+}

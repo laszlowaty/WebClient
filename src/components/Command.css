@@ -9,56 +9,70 @@
   padding: 5px;
   white-space: nowrap;
 }
+
 .command:focus {
   outline: none;
 }
 
-.command, .command .bad {
-    color: rgb(150, 150, 150);
+.command .bad {
+  color: rgb(150, 150, 150);
 }
 
 .command .free {
-    color: rgb(194, 194, 194);
+  color: rgb(194, 194, 194);
 }
 
 .command .cmd {
-    color: rgb(36, 129, 36);
+  color: rgb(36, 129, 36);
 }
 
 .command .word, .command .phrase {
-    color: rgb(170, 170, 42);
+  color: rgb(170, 170, 42);
 }
 
-.command span {
-    display: inline-block;
+.command .part {
+  display: inline-block;
 }
 
-.command span::after {
-    display: inline-block;
-    content: attr(data-desc);
-    color: rgb(75, 75, 75);
+.command .part::after {
+  display: inline-block;
+  content: attr(data-desc);
+  color: rgb(75, 75, 75);
 }
 
 .command .free::after {
-    color: rgb(97, 97, 97);
+  color: rgb(97, 97, 97);
 }
 
 .command .cmd::after {
-    color: rgb(18, 65, 18);
+  color: rgb(18, 65, 18);
 }
 
 .command .word::after, .command .phrase::after {
-    color: rgb(85, 85, 22);
+  color: rgb(85, 85, 22);
 }
 
 .command__options {
-    position: fixed;
-    bottom: 38px;
+  position: fixed;
+  bottom: 38px;
 }
 
 .command__options span {
-    display: inline-block;
-    padding: 5px;
-    margin-left: 3px;
-    background: #444;
+  display: inline-block;
+  padding: 5px;
+  margin-left: 3px;
+  background: #444;
+}
+
+.command .maskedChar {
+  position: relative;
+  color: rgba(0,0,0,0);
+}
+.command .maskedChar::after {
+  content: '•';
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  color: #fff;
 }

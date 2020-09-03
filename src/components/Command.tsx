@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import select from 'selection-range';
 
 import './Command.css';
@@ -12,12 +12,12 @@ type Props = {
   onCommand: (cmd: string) => void,
 };
 
+const EMPTY_CHAR = '\u2063';
+
 const Command = observer((props: Props) => {
 
   // command line input variables
   const cmdRef = useRef<HTMLDivElement|null>(null);
-  const cmdRefNormal = useRef<HTMLDivElement|null>(null);
-  const cmdRefMasked = useRef<HTMLInputElement|null>(null);
   const cursorPos = useRef<number>(0);
   const currentlyEntering = useRef(''); // only used to pass previously entered text to password input when switching to maskedEcho mode
 
@@ -32,7 +32,7 @@ const Command = observer((props: Props) => {
 
   const resetCmdLine = () => {
     if (cmdRef.current) {
-      cmdRef.current.innerHTML = '\u2063';
+      cmdRef.current.innerHTML = EMPTY_CHAR;
       cursorPos.current = 0;
     }
   }
@@ -81,7 +81,15 @@ const Command = observer((props: Props) => {
   }
 
   const cleanUpCmd = (cmd: string): string => {
-    return cmd.replace('\u2063', '').replace(/\n\r/g, ' ');
+    return cmd.replace(EMPTY_CHAR, '').replace(/\n\r/g, ' ');
+  }
+
+  const maskInputChars = (input: string): string => {
+    return input
+      .replace(EMPTY_CHAR, '')
+      .split('')
+      .map((char) => `<span class="maskedChar">${char}</span>`)
+      .join('');
   }
 
   // key pressed anywhere in the app should be redirected to command line
@@ -102,7 +110,6 @@ const Command = observer((props: Props) => {
   // only run once on component mount
   useEffect(
     () => { 
-      cmdRef.current = cmdRefNormal.current;
       document.addEventListener('keydown', handleGlobalKeydown as EventListener, false);
       window.onfocus = focusToCmdLine;
       resetCmdLine();
@@ -111,35 +118,25 @@ const Command = observer((props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
- 
-  // when maskEcho changes, focus the newly created input field
+
   useEffect(
     () => {
-      setTimeout(() => {
-        cmdRef.current = maskEcho ? cmdRefMasked.current : cmdRefNormal.current;
-        if (maskEcho && cmdRefMasked.current) {
-          cmdRefMasked.current.value = currentlyEntering.current;
-          cmdRefMasked.current.focus();
-        }
-        if (!maskEcho && cmdRefNormal.current) {
+      if (!cmdRef.current) {
+        return;
+      }
+      if (maskEcho) {
+        if (currentlyEntering.current) {
+          cmdRef.current.innerHTML = maskInputChars(cmdRef.current.innerText);
+        } else {
           resetCmdLine();
-          focusToCmdLine();
         }
-      }, 50);
+        focusToCmdLine();
+      } else {
+        cmdRef.current.innerHTML = cmdRef.current.innerText;
+      }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [maskEcho]
-  )
-
-  const handleMaskedInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    // handling Enter key
-    if (event.key === 'Enter') {
-      // send out command
-      props.onCommand(cleanUpCmd(event.currentTarget.value).trim());
-      // cancel the event
-      event.preventDefault();
-    }
-  }
+    [ maskEcho ]
+  );
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (!cmdRef.current) { return; }
@@ -151,13 +148,19 @@ const Command = observer((props: Props) => {
       props.onCommand(cleanCmd);
       // cancel the event
       event.preventDefault();
-      // select everything in the field
-      selectAllCmdLine();
-      // add to history, only if unique to last entered
-      if (!cmdHistory.current.length || cmdHistory.current[cmdHistory.current.length - 1] !== cleanCmd) {
-        cmdHistory.current.push(cleanCmd);
-        cmdHistoryPointer.current = null;
+
+      if (!maskEcho) {
+        // select everything in the field
+        selectAllCmdLine();
+        // add to history, only if unique to last entered
+        if (!cmdHistory.current.length || cmdHistory.current[cmdHistory.current.length - 1] !== cleanCmd) {
+          cmdHistory.current.push(cleanCmd);
+        }
+      } else {
+        resetCmdLine()      
       }
+
+      cmdHistoryPointer.current = null;
     }
 
     // handling history
@@ -195,14 +198,20 @@ const Command = observer((props: Props) => {
       if (!cmdRef.current) { return; }
       checkCmdLineForEmptyIssue();
 
-      // parsing entered text into HTML tags
-      let inputLine = cleanUpCmd(cmdRef.current.innerText);
-      let outputLine = '<span>' + inputLine + '<span>';
+      let outputLine = '';
+      if (!maskEcho) {
+        // parsing entered text into HTML tags
+        let inputLine = cleanUpCmd(cmdRef.current.innerText);
+        outputLine = '<span>' + inputLine + '<span>';        
+      } else {
+        outputLine = maskInputChars(cmdRef.current.innerText);
+      }
 
       // updating the input field
       const pos = select(cmdRef.current);
       cmdRef.current.innerHTML = outputLine;
       select(cmdRef.current, pos);
+
       updateCursorPos();
 
       // updating some flow variables
@@ -214,32 +223,16 @@ const Command = observer((props: Props) => {
   };
 
   return (
-    <>
-      { maskEcho
-        ? (
-          <input
-            className="command"
-            id="commandLine"
-            ref={cmdRefMasked}
-            tabIndex={0}
-            onKeyDown={handleMaskedInputKeyDown}
-            type="password"
-          />
-        )
-        : (
-          <div
-            className="command"
-            id="commandLine"
-            ref={cmdRefNormal}
-            tabIndex={0}
-            onKeyDown={handleKeyDown}
-            onClick={updateCursorPos}
-            onInput={handleInput}
-            contentEditable
-          />
-          )
-      }
-    </>
+    <div
+      className="command"
+      id="commandLine"
+      ref={cmdRef}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      onClick={updateCursorPos}
+      onInput={handleInput}
+      contentEditable
+    />
   )
 });
 

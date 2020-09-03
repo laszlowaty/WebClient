@@ -17,11 +17,24 @@
   text-align: left;
 }
 
-.console .block {
+.console .block, .console code.echo {
   border-left: 4px solid #222;
   padding-left: 6px;
   display: inline-block;
   animation: fadeIn 1000ms;
+}
+
+.console code.echo {
+  color: #666;
+}
+
+.console div:last-child {
+  padding-bottom: 10px;
+  border-left: 4px solid #222;
+}
+
+.console div:last-child code {
+  margin-left: -4px;
 }
 
 @keyframes fadeIn {

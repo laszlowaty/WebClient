@@ -5,7 +5,7 @@ import Ansi from '../components/common/Ansi';
 import stripAnsi from 'strip-ansi';
 
 import { observable, action } from 'mobx';
-import { ConsoleLine, ConnSettings } from './types';
+import { ConsoleLine, ConnSettings, Capture, CaptureResponse } from './types';
 import { CONN_STATUS_CODE } from '../common/system';
 
 class Connection {
@@ -20,12 +20,29 @@ class Connection {
   @observable hasPrompt: boolean = false;
   @observable status: string = '';
   @observable maskEcho: boolean = false;
+
   @observable settings: ConnSettings = {
     echo: true,
     keepAlive: true,
     proxyHost: 'localhost',
     proxyPort: '8080',
   };
+
+  captures: Array<Capture> = [
+    {
+      request: {
+        command: 'inv',
+        startTrigger: /Nosisz przy sobie:/,
+        cancelTrigger: /testtest/,
+        callback: (test: CaptureResponse) => console.log(test),
+      },
+      response: {
+        hadScrollMsg: false,
+        lines: [],
+      }
+    }
+  ];
+  captureTo: number | null = null;
 
   sock: SocketIOClient.Socket | null = null;
   keepAliveTimer: number | null = null;
@@ -41,16 +58,16 @@ class Connection {
       this.setStatus(status);
       switch (status) {
         case CONN_STATUS_CODE.CONN_REFUSED:
-          this.addLineRaw("MUD server refused connection.", 'error error--connection');
+          this.addEchoLine("MUD server refused connection.", 'error error--connection');
           break;
         case CONN_STATUS_CODE.CONN_TELNET_ERR:
-          this.addLineRaw("MUD server connection unsuccesfull.", 'error error--connection');
+          this.addEchoLine("MUD server connection unsuccesfull.", 'error error--connection');
           break;
         case CONN_STATUS_CODE.CONN_PROXY_ERR:
-          this.addLineRaw("Websocket proxy connection error.", 'error error--connection');
+          this.addEchoLine("Websocket proxy connection error.", 'error error--connection');
           break;
         case CONN_STATUS_CODE.CONN_CLOSED:
-          this.addLineRaw("Telnet connection was closed.", 'error error--connection');
+          this.addEchoLine("Telnet connection was closed.", 'error error--connection');
           break;
         case CONN_STATUS_CODE.CONN_CONTROL_MASKCHAR:
           this.maskEcho = true;
@@ -70,64 +87,13 @@ class Connection {
     this.setKeepAlive(this.settings.keepAlive);
   }
 
-  @action addTelnetLine = (line: string) => {
-    this.consoleCount++;
-    this.console.push({
-      raw: line,
-      text: stripAnsi(line),
-      formatted: (
-        <div key={this.consoleCount}>
-          <Ansi className="block" text={line} />
-        </div>
-      ),
-    });
+  @action addTelnetLine = (source: string) => {
+    const line = this.checkIfShouldCapture(this.parseTelnetLine(source));
+    this.console.push(line);
   }
 
-  @action addEchoLine = (line: string) => {
-    this.consoleCount++;
-    this.console.push({
-      raw: line,
-      text: line,
-      formatted: (
-        <div key={this.consoleCount}>
-          <code className="block">{line}</code>
-        </div>
-      ),
-    });
-  }
-
-  @action appendEchoToLine = (index: number, text: string, classes?: string) => {
-    const old = this.console[index];
-    this.consoleCount++;
-    const echoText = old.raw.endsWith(' ') ? text : ` ${text}`;
-    this.console.push({
-      raw: old.raw + echoText,
-      text: old.text + echoText,
-      formatted: (
-        <div key={this.consoleCount}>
-          <Ansi className="block" text={old.raw} />
-          <code className="echo">{echoText}</code>
-        </div>
-      ),
-    });
-    this.console[index] = {
-      raw: '',
-      text: '',
-      formatted: null,
-    };
-  }
-
-  @action addLineRaw = (line: string, classes?: string) => {
-    this.consoleCount++;
-    this.console.push({
-      raw: line,
-      text: line,
-      formatted: (
-        <div key={this.consoleCount}>
-          <span className={classes}>{line}</span>
-        </div>
-      ),
-    });
+  @action addEchoLine = (line: string, type: string = 'echo') => {
+    this.console.push(this.parseTelnetLine(line || ' ', type));
   }
 
   @action resetConnection = () => {
@@ -149,12 +115,7 @@ class Connection {
     this.sock.emit('stream', this.sanitizeCommand(cmd) + '\n');
     if (this.settings.echo) {
       const echo = this.maskEcho ? cmd.split('').fill('*').join('') : cmd;
-      // if last line container newline, put echo in new line, otherwise append
-      if (!this.console[this.console.length - 1].raw.match('[\n\r]$')) {
-        this.appendEchoToLine(this.console.length - 1, echo);
-      } else {
-        this.addEchoLine(echo);
-      }
+      this.addEchoLine(echo);
     }
     this.setKeepAlive(this.settings.keepAlive);
   }
@@ -169,6 +130,19 @@ class Connection {
     }
   }
 
+  parseTelnetLine = (source: string, type: string = 'block'): ConsoleLine => {
+    this.consoleCount++;
+    return {
+      raw: source,
+      text: stripAnsi(source),
+      formatted: (
+        <div key={this.consoleCount}>
+          <Ansi className={type} text={source} />
+        </div>
+      ),
+    };
+  }
+
   sanitizeCommand = (cmd: string): string => {
     return he.decode(cmd.trim().replace(/\s+/g, ' '));
   }
@@ -178,6 +152,47 @@ class Connection {
       debugger;
       this.sendCmd('');
     }
+  }
+
+  checkIfShouldCapture = (line: ConsoleLine): ConsoleLine => {
+    // sanity check capture target exists
+    if (this.captureTo !== null && !this.captures.length) {
+      this.captureTo = null;
+    }
+
+    // checking if capturing should start
+    if (this.captureTo === null) {
+      // find the first capture that matches
+      // delete previous ones (in case of capture miss, the non-matched captures from the past are deleted)
+      // leave all the rest in the queue
+      let parsedCaptures: Array<Capture> = [];
+      this.captures.forEach((capture, i) => {
+        if (this.captureTo === null && capture.request.startTrigger.test(line.raw)) {
+          parsedCaptures = [ capture ];
+          this.captureTo = i;
+        } else {
+          parsedCaptures.push(capture);
+        }
+      });
+      this.captures = parsedCaptures;
+    }
+
+    // if capturing is going on
+    if (this.captureTo !== null) {
+      const capture = this.captures[this.captureTo];
+      const pressEnterTest = line.raw.trim().match(/([\s\S]*)\[Naci.nij Enter aby kontynuowa.\]/);
+      console.log('capturing', line.raw);
+      if (pressEnterTest) {
+        capture.response.lines.push(this.parseTelnetLine(pressEnterTest[1]));
+        console.log(capture.response);
+        this.sendCmd('');
+      } else {
+        capture.response.lines.push(line);
+        console.log(capture.response);
+      }
+    }
+
+    return line;
   }
 }
 
