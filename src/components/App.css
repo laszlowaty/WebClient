@@ -6,7 +6,7 @@
 }
 
 html {
-  background-color: #000;
+  background: rgb(var(--colorBase), var(--colorBase), var(--colorBase));
 }
 
 .loadingCover {
@@ -49,6 +49,12 @@ html {
   width: 30px;
   height: 30px;
   text-align: center;
+  background: rgb(var(--colorBase), var(--colorBase), var(--colorBase));
+  color: #888;
+}
+
+.settingsBtn button:hover {
+  color: #aaa;
 }
 
 /* Layout */
@@ -80,6 +86,7 @@ html {
   padding: 0;
   border-collapse: collapse;
   height: 100%;
+  width: 100%;
 }
 
 .leftSide {

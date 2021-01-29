@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import select from 'selection-range';
+import useDocumentVisibility from '@rehooks/document-visibility';
 
 import './Command.css';
 
@@ -30,9 +31,21 @@ const Command = observer((props: Props) => {
   const store = useStore();
   const { maskEcho } = store.conn;
 
+  // focus on commandline when tab is focused
+  const documentVisibility = useDocumentVisibility();
+  useEffect(
+    () => {
+      if (documentVisibility === 'visible') {
+        focusToCmdLine();
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ documentVisibility]
+  );
+
   const resetCmdLine = () => {
     if (cmdRef.current) {
-      cmdRef.current.innerHTML = EMPTY_CHAR;
+      cmdRef.current.innerHTML = `<span>${EMPTY_CHAR}</span>`;
       cursorPos.current = 0;
     }
   }
@@ -75,7 +88,7 @@ const Command = observer((props: Props) => {
 
   const checkCmdLineForEmptyIssue = () => {
     // cleaning any remains of HTML tag if the cmd line text is empty
-    if (cmdRef.current && cmdRef.current.innerText === '') {
+    if (cmdRef.current && cmdRef.current.innerText.replace(/\n\r/g, '') === '') {
       resetCmdLine();
     }
   }
@@ -112,8 +125,10 @@ const Command = observer((props: Props) => {
     () => { 
       document.addEventListener('keydown', handleGlobalKeydown as EventListener, false);
       window.onfocus = focusToCmdLine;
-      resetCmdLine();
-      focusToCmdLine();
+      setTimeout(() => {
+        checkCmdLineForEmptyIssue();
+        focusToCmdLine();
+      }, 100);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     []
@@ -140,6 +155,11 @@ const Command = observer((props: Props) => {
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (!cmdRef.current) { return; }
+    checkCmdLineForEmptyIssue();
+
+    if (event.key === 'Escape') {
+      resetCmdLine();
+    }
 
     // handling Enter key
     if (event.key === 'Enter') {
@@ -150,10 +170,13 @@ const Command = observer((props: Props) => {
       event.preventDefault();
 
       if (!maskEcho) {
+        checkCmdLineForEmptyIssue();
         // select everything in the field
-        selectAllCmdLine();
+        if (cleanCmd !== '') {
+          selectAllCmdLine();
+        }
         // add to history, only if unique to last entered
-        if (!cmdHistory.current.length || cmdHistory.current[cmdHistory.current.length - 1] !== cleanCmd) {
+        if (!cmdHistory.current.length || ( cleanCmd !== '' && cmdHistory.current[cmdHistory.current.length - 1] !== cleanCmd)) {
           cmdHistory.current.push(cleanCmd);
         }
       } else {

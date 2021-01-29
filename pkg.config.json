@@ -1,0 +1,7 @@
+{
+  "name": "KillerMUD",
+  "bin": "src/proxy/index.js",
+  "assets": [
+    "../../build/**/*"
+  ]
+}

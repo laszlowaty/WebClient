@@ -2,11 +2,15 @@ import Anser from "anser";
 import { escapeCarriageReturn } from "escape-carriage";
 import * as React from "react";
 
+const anser = new Anser();
+// @ts-ignore
+window.anser = anser;
 const ansiToHTML = (input: string): string => {
   input = escapeCarriageReturn(input);
-  return Anser.ansiToHtml(input, {
+  return anser.ansiToHtml(input, {
     remove_empty: false,
-    use_classes: true,
+    use_classes: false,
+    continue: true,
   });
 }
 
@@ -21,17 +25,20 @@ const htmlEntReplacements = new Map([
   ['>', '&gt;'],
   ["'", '&#39;'],
   ['"', '&quot;'],
+  ['\n', '<br>'],
 ]);
+
 const htmlEntReplacer = (entity: string): string =>
   htmlEntReplacements.get(entity) || entity;
 
 const Ansi = (props: Props): JSX.Element => {
   const { className, text } = props;
+  let parsed = ansiToHTML(text.replace(/[<>'"&\n]/g, htmlEntReplacer));
+  const __html = parsed === '' ? '&nbsp;' : parsed;
 
   return (
     <code
-      className={className}
-      dangerouslySetInnerHTML={{ __html: ansiToHTML(text.replace(/[<>]/g, htmlEntReplacer)) }}
+      dangerouslySetInnerHTML={{ __html: __html + '<br>' }}
     />
   );
 }

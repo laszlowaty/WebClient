@@ -53,8 +53,11 @@ export type ConnSettings = {
 export type CaptureRequest = {
   command: string,
   startTrigger: RegExp,
-  cancelTrigger: RegExp,
-  callback: Function,
+  cancelTriggers: Array<{
+    pattern: RegExp,
+    callback: (response: ConsoleLine) => ConsoleLine | void | null,
+  }>,
+  callback: (response: CaptureResponse) => ConsoleLine | void | null,
 }
 
 export type Capture = {
@@ -66,11 +69,6 @@ export type CaptureResponse = {
   lines: Array<ConsoleLine>,
   hadScrollMsg: boolean,
 }
-
-export type CaptureResponseAck = {
-  unwantedLines: Array<ConsoleLine>,
-}
-
 export type MessageTrigger = {
   expression: RegExp,
   scope: 'match' | 'line' | 'block',
@@ -85,3 +83,38 @@ export type MessageTriggerResponse = {
 export type MessageTriggerResponseAck = {
   replacement: string | null,
 }
+
+export type LayerObject = {
+  visible: boolean,
+  type: number, // non-spec
+  userData: { [id: string]: string | undefined } | never[], // non-spec
+  id: number,
+  width: number,
+  y: number,
+  x: number,
+  name: string,
+  height: number,
+  exits: { [name: string]: number | undefined } | never[], // non-spec
+  ellipse: boolean,
+}
+
+export type MapLayer = {
+  visible: boolean,
+  type: string,
+  name: string,
+  objects: LayerObject[],
+  id: string,
+  opacity: number,
+  startx: number,
+  starty: number,
+}
+
+export type MapData = {
+  tiledversion: string,
+  type: string,
+  infinite: boolean,
+  orientation: string,
+  properties: never[],
+  layers: MapLayer[],
+  version: number,
+};

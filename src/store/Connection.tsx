@@ -10,6 +10,7 @@ import { CONN_STATUS_CODE } from '../common/system';
 
 class Connection {
   CONSOLE_LIMIT = 1000;
+  BLOCK_FOLLOWED_BY_PRESS_ENTER_REGEX = /([\s\S]*)\[Naci.nij Enter aby kontynuowa.\]/;
   /**
    * The main console window will only receive React Nodes, they will never get changed.
    * Therefore we are not observing the log itself, only its count.
@@ -29,18 +30,23 @@ class Connection {
   };
 
   captures: Array<Capture> = [
-    {
-      request: {
-        command: 'inv',
-        startTrigger: /Nosisz przy sobie:/,
-        cancelTrigger: /testtest/,
-        callback: (test: CaptureResponse) => console.log(test),
-      },
-      response: {
-        hadScrollMsg: false,
-        lines: [],
-      }
-    }
+    // {
+    //   request: {
+    //     command: 'config',
+    //     startTrigger: /Aktualna konfiguracja:/,
+    //     cancelTriggers: [
+    //       {
+    //         pattern: /testtest/,
+    //         callback: (line: ConsoleLine) => { console.log('cancel callback', line); },
+    //       }
+    //     ],
+    //     callback: (test: CaptureResponse) => console.log('capture callback', test),
+    //   },
+    //   response: {
+    //     hadScrollMsg: false,
+    //     lines: [],
+    //   }
+    // }
   ];
   captureTo: number | null = null;
 
@@ -49,10 +55,13 @@ class Connection {
 
   constructor() {
     if (this.sock === null) {
-      this.sock = io(`http://${this.settings.proxyHost}:${this.settings.proxyPort}/`);
+      this.sock = io('', {
+        reconnection: false,
+      });
+      //this.sock = io(`http://${this.settings.proxyHost}:${this.settings.proxyPort}/`);
     }
     this.sock.on('stream', (buf: string) => {
-      this.addTelnetLine(buf);
+      this.addTelnetLines(buf);
     });
     this.sock.on('status', (status: string) => {
       this.setStatus(status);
@@ -68,6 +77,7 @@ class Connection {
           break;
         case CONN_STATUS_CODE.CONN_CLOSED:
           this.addEchoLine("Telnet connection was closed.", 'error error--connection');
+          this.resetConnection();
           break;
         case CONN_STATUS_CODE.CONN_CONTROL_MASKCHAR:
           this.maskEcho = true;
@@ -87,13 +97,18 @@ class Connection {
     this.setKeepAlive(this.settings.keepAlive);
   }
 
-  @action addTelnetLine = (source: string) => {
-    const line = this.checkIfShouldCapture(this.parseTelnetLine(source));
-    this.console.push(line);
+  @action addTelnetLines = (source: string) => {
+    let sourceLines = source.replace(/\r/g, '').split('\n');
+    sourceLines.forEach((sourceLine) => {
+      let lines = this.checkIfShouldCapture(this.addTelnetLine(sourceLine));
+      lines.forEach((line) => {
+        this.console.push(line);
+      });
+    });
   }
 
   @action addEchoLine = (line: string, type: string = 'echo') => {
-    this.console.push(this.parseTelnetLine(line || ' ', type));
+    this.console.push(this.addTelnetLine(line || ' ', type));
   }
 
   @action resetConnection = () => {
@@ -112,11 +127,29 @@ class Connection {
     if (!this.sock) {
       return;
     }
-    this.sock.emit('stream', this.sanitizeCommand(cmd) + '\n');
-    if (this.settings.echo) {
-      const echo = this.maskEcho ? cmd.split('').fill('*').join('') : cmd;
-      this.addEchoLine(echo);
+
+    const sanitizedCmd = this.sanitizeCommand(cmd);
+
+    // splitting command by ;
+    // unless ; is first character
+    let commands = [];
+    if (cmd.length > 1) {
+      const firstLetter = sanitizedCmd.substr(0,1);
+      commands = sanitizedCmd.substr(1).split(';');
+      commands[0] = firstLetter + commands[0];
+    } else {
+      commands.push(sanitizedCmd);
     }
+
+    commands.forEach((command) => {
+      if (!this.sock) { return; }
+      this.sock.emit('stream', command + '\n');
+      if (this.settings.echo) {
+        const echo = this.maskEcho ? cmd.split('').fill('*').join('') : command;
+        this.addEchoLine(echo + '\n');
+      }
+    });
+
     this.setKeepAlive(this.settings.keepAlive);
   }
 
@@ -130,16 +163,12 @@ class Connection {
     }
   }
 
-  parseTelnetLine = (source: string, type: string = 'block'): ConsoleLine => {
+  addTelnetLine = (source: string, type: string = 'block'): ConsoleLine => {
     this.consoleCount++;
     return {
       raw: source,
       text: stripAnsi(source),
-      formatted: (
-        <div key={this.consoleCount}>
-          <Ansi className={type} text={source} />
-        </div>
-      ),
+      formatted: <Ansi key={this.consoleCount} className={type} text={source} />,
     };
   }
 
@@ -149,50 +178,100 @@ class Connection {
 
   sendKeepAlive = () => {
     if (this.connected) {
-      debugger;
       this.sendCmd('');
     }
   }
 
-  checkIfShouldCapture = (line: ConsoleLine): ConsoleLine => {
-    // sanity check capture target exists
-    if (this.captureTo !== null && !this.captures.length) {
+  checkIfShouldCapture = (line: ConsoleLine): Array<ConsoleLine> => {
+    // Finding out if any capture should be cancelled.
+    // For example, if `inventory` command was issued, but you are sleeping, you received "you are asleep", thus
+    // capturing should be cancelled.
+    // Algorithm:
+    // - find the first capture that matches the cancel rule
+    // - delete it and previous ones (in case of capture miss, the non-matched captures from the past are deleted)
+    // - leave all the rest in the queue
+    let newLines: Array<ConsoleLine> = [];
+    let cancelCheckedCaptures: Array<Capture> = [];
+    let foundCancelled: boolean = false;
+    this.captures.forEach((capture, i) => {
+      if (foundCancelled) {
+        cancelCheckedCaptures.push(capture);
+        return;
+      }
+      capture.request.cancelTriggers.forEach((cancelTrigger) => {
+        if (cancelTrigger.pattern.test(line.raw)) {
+          foundCancelled = true;
+          let newLine = cancelTrigger.callback(line);
+          if (newLine) { newLines.push(newLine); }
+        }
+      });
+      if (foundCancelled) {
+        cancelCheckedCaptures = [];
+      } else {
+        cancelCheckedCaptures.push(capture);  
+      }
+    });
+
+    // updating capture list to remove captures that have been cancelled or outdated
+    this.captures = cancelCheckedCaptures;
+
+    // is currentt input block caused capture cancelation, there's no more to do here
+    if (foundCancelled) {
+      console.log('cancelled some captures', this.captureTo, this.captures);
+      return newLines;
+    }
+  
+    // sanity check if capture target exists
+    if (this.captureTo !== null && typeof this.captures[this.captureTo] === 'undefined') {
       this.captureTo = null;
     }
 
-    // checking if capturing should start
+    // Checking if capturing should start.
+    // Algorithm:
+    // - find the first capture that matches start rule
+    // - delete previous ones (in case of capture miss, the non-matched captures from the past are deleted)
+    // - leave all the rest in the queue
     if (this.captureTo === null) {
-      // find the first capture that matches
-      // delete previous ones (in case of capture miss, the non-matched captures from the past are deleted)
-      // leave all the rest in the queue
-      let parsedCaptures: Array<Capture> = [];
+      let startCheckedCaptures: Array<Capture> = [];
       this.captures.forEach((capture, i) => {
         if (this.captureTo === null && capture.request.startTrigger.test(line.raw)) {
-          parsedCaptures = [ capture ];
+          startCheckedCaptures = [ capture ];
           this.captureTo = i;
         } else {
-          parsedCaptures.push(capture);
+          startCheckedCaptures.push(capture);
         }
       });
-      this.captures = parsedCaptures;
+      // updating captures list because some of they may have become outdated
+      this.captures = startCheckedCaptures;
     }
 
-    // if capturing is going on
+    // sanity check if capture target exists
+    if (this.captureTo !== null && typeof this.captures[this.captureTo] === 'undefined') {
+      this.captureTo = null;
+    }
+
+    // Check if capturing is going on. This happens also for multi-blocks captures, and should be used as little
+    // as possible because there is chance of unwanted lines captures between blocks.
+    // Multi-block captures mostly happen because of messages like "press enter to see more"
     if (this.captureTo !== null) {
       const capture = this.captures[this.captureTo];
-      const pressEnterTest = line.raw.trim().match(/([\s\S]*)\[Naci.nij Enter aby kontynuowa.\]/);
+      const pressEnterTest = line.raw.trim().match(this.BLOCK_FOLLOWED_BY_PRESS_ENTER_REGEX);
       console.log('capturing', line.raw);
       if (pressEnterTest) {
-        capture.response.lines.push(this.parseTelnetLine(pressEnterTest[1]));
-        console.log(capture.response);
+        capture.response.lines.push(this.addTelnetLine(pressEnterTest[1]));
+        capture.response.hadScrollMsg = true;
         this.sendCmd('');
       } else {
         capture.response.lines.push(line);
-        console.log(capture.response);
+        let newLine = capture.request.callback({ ...capture.response });
+        if (newLine) { newLines.push(newLine); }
+        delete(this.captures[this.captureTo]);
+        this.captureTo = null;
       }
+      return newLines;
     }
 
-    return line;
+    return [ line ];
   }
 }
 

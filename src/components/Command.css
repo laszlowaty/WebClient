@@ -1,17 +1,27 @@
 .command {
   -webkit-appearance: none;
-  border: 1px solid #444;
-  background: #111;
-  color: #fff;
+  background: rgb(var(--colorBase), var(--colorBase), var(--colorBase));
+  color: rgb(var(--maxNormal), var(--maxNormal), var(--maxNormal));
   font-weight: bold;
   font-family: 'Inconsolata', monospace;
   text-align: left;
   padding: 5px;
   white-space: nowrap;
+  caret-color: rgb(var(--maxNormal), var(--maxNormal), var(--maxNormal));;
+  border-left: 4px solid #444;
+}
+
+.command span {
+  display: inline-block;
+  min-width: 1px;
+}
+
+.command span:empty {
+  min-width: 1px;
 }
 
 .command:focus {
-  outline: none;
+  outline: 0;
 }
 
 .command .bad {

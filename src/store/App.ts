@@ -6,15 +6,15 @@ import merge from 'deepmerge';
 const defaultTheme: Theme = {
   color: {
     saturation: 0.85,
-    brightBoost: 0.2,
+    brightBoost: 0.1,
     backgroundHinder: 0.4,
     blackBoost: 0.25,
     colorBase: 12,
-    colorTop: 230,
+    colorTop: 255,
   },
   font: {
-    family: 'Roboto Mono',
-    size: 12, // in pixels
+    family: 'Inconsolata',
+    size: 15, // in pixels
     letterSpacing: 0, // in pixels
     lineHeight: 100 // in percents
   }
@@ -24,6 +24,7 @@ class App {
   @observable theme: Theme = defaultTheme;
   @observable firstTime: boolean = true;
   @observable loadedFonts: Array<string> = []; // array of strings like: 'Robot Mono:400'
+  @observable showSettings: boolean = false;
 
   constructor() {
     // loading fonts
@@ -69,6 +70,11 @@ class App {
   @action setFontLoaded = (fontName: string, fontVariant: string) => {
     this.loadedFonts.push(fontName + ':' + fontVariant.replace('n','') + '00');
   }
+
+  @action toogleSettings = () => {
+    this.showSettings = !this.showSettings;
+  }
+
 
   /** Sets colour and theme related variables and styles on document.body */
   updateTheme = (theme: Theme) => {

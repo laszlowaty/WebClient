@@ -54,17 +54,11 @@ class Proxy {
     this.log(webSock.id, 'proxy connected');
     webSock.emit('status', CONN_STATUS_CODE.CONN_OK);
 
-    if (!webSock.charset) {
-      webSock.charset = null;
-    }
-
     if(!webSock.peerSock) {
       this.connectTelnet(webSock);
     }
     webSock.on('stream', (message) => {
-      if(webSock.charset && (webSock.charset !== 'utf8')) {
-        message = iconv.encode(message, webSock.charset);
-      }
+      message = iconv.encode(message, 'cp1250');
       const peerSock = webSock.peerSock;
       if(peerSock) {
         peerSock.write(message);
@@ -110,23 +104,21 @@ class Proxy {
       if(peerSock) {
         const filteredBuf = this.parseTelnetControlCodes(buf);
 
-        this.detectEncoding(filteredBuf, webSock);
-
         while (this.controlCodes.length) {
           webSock.emit('status', this.controlCodes.shift());
         }
 
-        let line = webSock.charset ? iconv.decode(filteredBuf, webSock.charset) : this.decoder.decode(filteredBuf);
-        
-        // stop searching for encoding after some fixed messages, and default to win1250
-        if(
-          !webSock.charset &&
-          (line.indexOf('Poprzednie logowanie') !== -1 || line.indexOf('z tego adresu') !== -1)
-        ) {
-          this.log(webSock.id, 'did not detect encoding, defaulting to cp1250')
-          webSock.charset = 'cp1250';
-          line = iconv.decode(filteredBuf, webSock.charset);
-        }
+        let line = iconv.decode(filteredBuf, 'cp1250').replace(/[±¶Ľˇ¦¬]/g, (char) => {
+          switch (char) {
+            case '±': return 'ą';
+            case '¶': return 'ś';
+            case 'Ľ': return 'ź';
+            case 'ˇ': return 'Ą';
+            case '¦': return 'Ś';
+            case '¬': return 'Ź';
+            default: return '';
+          }
+        });
 
         peerSock.emit(
           'stream', 
@@ -148,7 +140,6 @@ class Proxy {
     telnet.on('close', () => {
       this.log(webSock.id, 'telnet disconnected');
       webSock.emit('status', CONN_STATUS_CODE.CONN_CLOSED);
-      webSock.charset = null;
     });
     telnet.on('end', () => {
       const peerSock = telnet.peerSock;
@@ -157,22 +148,6 @@ class Proxy {
         telnet.peerSock = null;
       }
     });
-  }
-
-  detectEncoding(buf, webSock) {
-    if (webSock.charset) return;
-    for (const value of buf.values()) {
-      if ([0x8C, 0x8F, 0x9C, 0x9F, 0xA5, 0xB9].indexOf(value) !== -1) {
-        webSock.charset = 'cp1250';
-        this.log(webSock.id, 'detected cp1250 encoding');
-        return;
-      }
-      if ([0xA1, 0xA6, 0xAC, 0xB1, 0xB6, 0xBC].indexOf(value) !== -1) {
-        webSock.charset = 'ISO-8859-2';
-        this.log(webSock.id, 'detected iso-8859-2 encoding');
-        return;
-      }
-    }
   }
 
   parseTelnetControlCodes(buf) {
