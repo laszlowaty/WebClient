@@ -5,7 +5,7 @@ import Ansi from '../components/common/Ansi';
 import stripAnsi from 'strip-ansi';
 
 import { observable, action } from 'mobx';
-import { ConsoleLine, ConnSettings, Capture, CaptureResponse } from './types';
+import { ConsoleLine, ConnSettings, Capture } from './types';
 import { CONN_STATUS_CODE } from '../common/system';
 
 class Connection {
@@ -55,10 +55,7 @@ class Connection {
 
   constructor() {
     if (this.sock === null) {
-      this.sock = io('', {
-        reconnection: false,
-      });
-      //this.sock = io(`http://${this.settings.proxyHost}:${this.settings.proxyPort}/`);
+      this.sock = io(`http://${this.settings.proxyHost}:${this.settings.proxyPort}/`);
     }
     this.sock.on('stream', (buf: string) => {
       this.addTelnetLines(buf);
@@ -163,7 +160,7 @@ class Connection {
     }
   }
 
-  addTelnetLine = (source: string, type: string = 'block'): ConsoleLine => {
+  @action addTelnetLine = (source: string, type: string = 'block'): ConsoleLine => {
     this.consoleCount++;
     return {
       raw: source,

@@ -13,7 +13,6 @@ const ansiToHTML = (input: string): string => {
     continue: true,
   });
 }
-
 declare interface Props {
   text: string;
   className?: string;
@@ -32,7 +31,7 @@ const htmlEntReplacer = (entity: string): string =>
   htmlEntReplacements.get(entity) || entity;
 
 const Ansi = (props: Props): JSX.Element => {
-  const { className, text } = props;
+  const { text } = props;
   let parsed = ansiToHTML(text.replace(/[<>'"&\n]/g, htmlEntReplacer));
   const __html = parsed === '' ? '&nbsp;' : parsed;
 

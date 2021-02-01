@@ -4,7 +4,7 @@
     "lib": [
       "dom",
       "dom.iterable",
-      "esnext"  
+      "esnext"
     ],
     "allowJs": true,
     "skipLibCheck": true,
@@ -22,9 +22,10 @@
       "./node_modules/@types",
       "./src/types"
     ],
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "src"
-  ],
+  ]
 }

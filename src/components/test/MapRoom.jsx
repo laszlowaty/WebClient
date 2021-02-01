@@ -1,8 +1,10 @@
 import React from 'react';
 import './MapRoom.css';
 
-export default () => (
+const MapRoom = () => (
     <div class="mapRoom">
         test
     </div>
 );
+
+export default MapRoom;

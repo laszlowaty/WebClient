@@ -4,8 +4,6 @@ const express = require('express');
 const open = require('open');
 const socketIo = require('socket.io');
 const Proxy = require('./Proxy.js');
-const fs = require('fs');
-const path = require('path');
 
 const app = express();
 const server = app.listen(8080, () => {
@@ -28,10 +26,13 @@ const conf = {
 };
 
 // create socket io
-const io = socketIo(server, { cookie: false });
-// const io = socketIo.listen(conf.web.port, {
-//   cookie: false,
-// });
+const io = socketIo(server, {
+  cookie: false,
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  }
+});
 
 console.log(
   'webtelnet started, listening on port ' +

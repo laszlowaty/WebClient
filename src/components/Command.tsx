@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import select from 'selection-range';
-import useDocumentVisibility from '@rehooks/document-visibility';
+import { useDocumentVisibility } from '../common/hooks';
 
 import './Command.css';
 
@@ -40,7 +40,7 @@ const Command = observer((props: Props) => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ documentVisibility]
+    [ documentVisibility ]
   );
 
   const resetCmdLine = () => {

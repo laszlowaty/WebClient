@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 import { testCommandTree } from '../common/commands';
 
@@ -10,14 +10,15 @@ import { observer } from 'mobx-react';
 
 import './App.css';
 import Settings from './common/Settings';
-import MudMap from './panels/map/Map';
-import MapBackground from './test/MapBackground';
 
 const App = observer(() => {
   const store = useStore();
   const { loadedFonts, theme } = store.app;
   const { family } = theme.font;
-  const isCurrentFontLoaded = loadedFonts.includes(family + ':400') && loadedFonts.includes(family + ':700');
+
+  // TODO sprawdzic czemu to nie dziala
+  const isCurrentFontLoaded = true
+  //const isCurrentFontLoaded = loadedFonts.includes(family + ':400') && loadedFonts.includes(family + ':700');
 
   return (
     <>
@@ -59,7 +60,6 @@ const App = observer(() => {
             </div>
           </div>
         </div>
-        <MapBackground />
       </div>
     </>
   );
