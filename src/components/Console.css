@@ -103,3 +103,43 @@
   animation: blinker 0.5s cubic-bezier(1, 0, 0, 1) infinite alternate;  
 }
 @keyframes blinker { to { opacity: 0; } }
+
+.scrollToBottom {
+  position: fixed;
+  bottom: 40px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.scrollToBottom .desktop {
+  display: block;
+  text-shadow: 0px 0px 3px rgb(255,255,0)
+}
+
+.scrollToBottom .mobile {
+  display: none;
+}
+
+.scrollToBottom .mobile button {
+  display: block;
+  padding: 10px;
+  background: #aaa;
+  color: #000;
+  font-weight: bold;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+.scrollToBottom .mobile button {
+  text-decoration: none;
+  background: #bbb;
+}
+
+@media only screen and (max-width: 600px) {
+  .scrollToBottom .desktop {
+    display: none;
+  }
+  
+  .scrollToBottom .mobile {
+    display: block;
+  }
+}

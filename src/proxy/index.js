@@ -16,8 +16,8 @@ app.use('/', express.static(__dirname + '/build'));
 
 const conf = {
   telnet: {
-    host: 'localhost',
-    port: 4000,
+    host: 'killermud.pl',
+    port: 3000,
   },
   web: {
     port: 8080,

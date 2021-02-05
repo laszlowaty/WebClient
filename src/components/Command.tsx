@@ -183,6 +183,9 @@ const Command = observer((props: Props) => {
         resetCmdLine()      
       }
 
+      const newEvent = new Event('needsScroll');
+      document.dispatchEvent(newEvent);
+
       cmdHistoryPointer.current = null;
     }
 
