@@ -1,5 +1,15 @@
 #!/usr/bin/env node
 
+const conf = {
+  telnet: {
+    host: 'killer-mud.pl',
+    port: 4004,
+  },
+  web: {
+    port: 8080,
+  },
+};
+
 const fs = require('fs');
 const express = require('express');
 const socketIo = require('socket.io');
@@ -182,16 +192,6 @@ class Proxy {
 // ===================================================
 
 const app = express();
-
-const conf = {
-  telnet: {
-    host: 'killer-mud.pl',
-    port: 4004,
-  },
-  web: {
-    port: 8080,
-  },
-};
 
 const server = http.createServer(app);
 
