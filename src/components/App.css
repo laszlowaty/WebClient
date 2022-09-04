@@ -72,7 +72,17 @@ html {
   display: table-row;
   padding: 0;
   height: 100%;
-  overflow: hidden;
+}
+
+/* hide scrollbar but allow scrolling */
+.topSide .leftSide {
+  -ms-overflow-style: none; /* for Internet Explorer, Edge */
+  scrollbar-width: none; /* for Firefox */
+  overflow-y: scroll; 
+}
+
+.topSide .leftSide::-webkit-scrollbar {
+  display: none; /* for Chrome, Safari, and Opera */
 }
 
 .bottomSide {
@@ -101,13 +111,11 @@ html {
   position: relative;
   display: table-cell;
   padding: 0;
-  overflow: scroll;
 }
 
 .console {
   display: block;
   position: absolute;
-  overflow: scroll;
   top: 0;
   left: 0;
   height: 100%;

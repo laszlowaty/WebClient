@@ -8,12 +8,6 @@ export type ConsoleLine = {
   formatted: ReactNode,
 }
 
-export type InventoryItem = {
-  name: ReactNode,
-  condition: number,
-  qty: number,
-}
-
 export type Themecolor = {
   saturation: number, // [0 - 1] colors saturation
   brightBoost: number, // [0 - 1] by how much bright colours are lighter than normal
@@ -46,75 +40,188 @@ export type Settings = {
 export type ConnSettings = {
   echo: boolean,
   keepAlive: boolean,
+  proxyProtocol: string,
   proxyHost: string,
   proxyPort: string,
 }
 
-export type CaptureRequest = {
-  command: string,
-  startTrigger: RegExp,
-  cancelTriggers: Array<{
-    pattern: RegExp,
-    callback: (response: ConsoleLine) => ConsoleLine | void | null,
-  }>,
-  callback: (response: CaptureResponse) => ConsoleLine | void | null,
-}
-
-export type Capture = {
-  request: CaptureRequest,
-  response: CaptureResponse,
-}
-
-export type CaptureResponse = {
-  lines: Array<ConsoleLine>,
-  hadScrollMsg: boolean,
-}
-export type MessageTrigger = {
-  expression: RegExp,
-  scope: 'match' | 'line' | 'block',
-  source: 'raw' | 'text'
-  callback: Function,
-}
-
-export type MessageTriggerResponse = {
-  match: string,
-}
-
-export type MessageTriggerResponseAck = {
-  replacement: string | null,
-}
-
-export type LayerObject = {
-  visible: boolean,
-  type: number, // non-spec
-  userData: { [id: string]: string | undefined } | never[], // non-spec
-  id: number,
-  width: number,
-  y: number,
-  x: number,
-  name: string,
-  height: number,
-  exits: { [name: string]: number | undefined } | never[], // non-spec
-  ellipse: boolean,
-}
-
-export type MapLayer = {
-  visible: boolean,
-  type: string,
-  name: string,
-  objects: LayerObject[],
-  id: string,
-  opacity: number,
-  startx: number,
-  starty: number,
-}
-
 export type MapData = {
-  tiledversion: string,
-  type: string,
-  infinite: boolean,
-  orientation: string,
-  properties: never[],
-  layers: MapLayer[],
-  version: number,
+  anonymousAreaName: string,
+  defaultAreaName: string,
+  areaCount: number,
+  areas: MapArea[],
+  customEnvColors: MapEnvColor[],
+  formatVersion: number,
+  labelCount: number,
+  mapSymbolFontDetails: string,
+  mapSymbolFontFudgeFactor: number,
+  onlyMapSymbolFontToBeUsed: boolean,
+  playerRoomColors: MapColor[],
+  playerRoomInnerDiameterPercentage: number,
+  playerRoomOuterDiameterPercentage: number,
+  playerRoomStyle: number,
+  playersRoomId: MapPlayerData,
+  roomCount: number,
+  userData: MapUserData,
 };
+
+export type MapRGBColor = [red: number, green: number, blue: number];
+
+export type MapEnvColor = {
+  color24RGB: MapRGBColor,
+  id: number,
+}
+
+export type MapColor = {
+  color24RGB: MapRGBColor,
+}
+
+export type MapCoordinates = [x: number, y: number, z: number];
+
+export type MapSize = [w: number, h: number];
+
+export type MapImageData = string[];
+
+export type MapArea = {
+  id: number,
+  name: string,
+  labels?: MapLabel[],
+  roomCount: number,
+  rooms: MapRoom[],
+}
+
+export type MapLabel = {
+  colors: MapColor[],
+  coordinates: MapCoordinates,
+  id: number,
+  image: MapImageData,
+  scaledels: boolean,
+  showOnTop: boolean,
+  size: MapSize,
+  text: string,
+}
+
+export type MapRoom = {
+  id: number,
+  coordinates: MapCoordinates,
+  environment: number,
+  exists: MapExit[],
+  userData?:   MapRoomUserData;
+  name?:       string;
+  weight?:     number;
+  symbol?:     MapSymbol;
+  locked?:     boolean;
+  stubExits?:  MapStubExit[];
+}
+
+export type MapExit = {
+  exitId: number,
+  door?: Door,
+  name: MapExitName,
+}
+
+export enum Door {
+  Closed = "closed",
+}
+
+export enum MapExitName {
+  East = "east",
+  North = "north",
+  Northeast = "northeast",
+  Northwest = "northwest",
+  South = "south",
+  Southeast = "southeast",
+  Southwest = "southwest",
+  West = "west",
+  Wyjscie = "wyjscie",
+}
+
+export type MapStubExit = {
+  name: MapExitName;
+}
+
+export type MapSymbol = {
+  text: string;
+}
+
+export type MapRoomUserData = {
+  vnum:    number;
+  sector?: MapSector;
+  s?:      MapUserDataDirection;
+  se?:     MapUserDataDirection;
+  e?:      MapUserDataDirection;
+  n?:      MapUserDataDirection;
+  ne?:     MapUserDataDirection;
+  sw?:     MapUserDataDirection;
+  w?:      MapUserDataDirection;
+  nw?:     MapUserDataDirection;
+  name?:   MapUserDataDirection;
+}
+
+export enum MapSector {
+  Arena = "arena",
+  ArktycznyLad = "arktyczny lad",
+  Bagno = "bagno",
+  BlotnaSciezka = "blotna sciezka",
+  Droga = "droga",
+  Eden = "eden",
+  GoraceZrodla = "gorace zrodla",
+  GorskaSciezka = "gorska sciezka",
+  Gory = "gory",
+  Jaskinia = "jaskinia",
+  Jezioro = "jezioro",
+  Kopalnia = "kopalnia",
+  Laka = "laka",
+  Las = "las",
+  Lawa = "lawa",
+  Lodowiec = "lodowiec",
+  Miasto = "miasto",
+  Morze = "morze",
+  Nieuzywany = "nieuzywany",
+  Ocean = "ocean",
+  Park = "park",
+  Plac = "plac",
+  Plaza = "plaza",
+  PodWoda = "pod woda",
+  Podziemia = "podziemia",
+  PodziemiaNaturalne = "podziemia naturalne",
+  PodziemnaDroga = "podziemna droga",
+  PodziemneJezioro = "podziemne jezioro",
+  Pole = "pole",
+  Powietrze = "powietrze",
+  Pustynia = "pustynia",
+  PustynnaDroga = "pustynna droga",
+  Puszcza = "puszcza",
+  RuchomePiaski = "ruchome piaski",
+  Ruiny = "ruiny",
+  Rzeka = "rzeka",
+  Sawanna = "sawanna",
+  Sciezka = "sciezka",
+  Step = "step",
+  StromaSciezka = "stroma sciezka",
+  Trawa = "trawa",
+  Tundra = "tundra",
+  Wewnatrz = "wewnatrz",
+  WodaPlyw = "woda plyw",
+  Wydmy = "wydmy",
+  WysGory = "wys gory",
+  Wzgorza = "wzgorza",
+}
+
+export type CustomEnvColor = {
+  color24RGB: number[];
+  id:         number;
+}
+
+export type MapUserData = {
+  type:    string;
+  version: string;
+}
+
+export type MapUserDataDirection = {
+  locked?: string;
+  id:      number | string;
+  command: string;
+}
+
+export type MapPlayerData = {[playerName: string]: number};

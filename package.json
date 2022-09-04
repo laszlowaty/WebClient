@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "main": "electron/main.js",
+  "homepage": "./",
   "dependencies": {
     "@rehooks/document-visibility": "^1.2.0",
     "@types/deepmerge": "^2.2.0",
@@ -11,7 +12,6 @@
     "@types/ol": "^6.4.1",
     "@types/react": "^16.9.0",
     "@types/react-dom": "^16.9.0",
-    "@types/socket.io-client": "^1.4.33",
     "@types/webfontloader": "^1.6.32",
     "anser": "git+ssh://git@github.com:ktunkiewicz/anser.git#master",
     "deepmerge": "^4.2.2",
@@ -32,10 +32,9 @@
     "react-scripts": "3.4.0",
     "remove-accents": "^0.4.2",
     "selection-range": "^1.1.0",
-    "socket.io": "^2.3.0",
-    "socket.io-client": "^2.3.0",
+    "socket.io-client": "^4.5.1",
     "strip-ansi": "^6.0.0",
-    "typescript": "~3.7.2",
+    "typescript": "^4.7.4",
     "webfontloader": "^1.6.28",
     "windows-1250": "^1.0.0"
   },

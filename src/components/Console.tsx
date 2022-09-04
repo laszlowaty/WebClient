@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react';
 import { useStore } from '../store';
 
@@ -7,32 +7,31 @@ import './Console.css';
 type Props = {
 };
 
-const scrollDown = (el: HTMLDivElement | null) => {
-  console.log(el)
-  if (!el) {
-    return;
-  }
-  el.style.overflow = 'hidden';
-  el.scrollTop = el.scrollHeight;
-  setTimeout(() => {
-    if (el) { el.style.overflow = 'scroll'; }
-  }, 200);
-}
-
 const Console = observer((props: Props) => {
   const store = useStore();
-  const { console, consoleCount } = store.conn;
+  const { console: consoleObj, consoleCount } = store.conn;
   const consoleRef = useRef<HTMLDivElement>(null);
+  const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   
-  const { current } = consoleRef;
-  var isAtBottom = true;
-  if (current) {
-    isAtBottom = current.scrollHeight - current.scrollTop - current.offsetHeight - 20 < 1;
+  const scrollDown = (el: HTMLDivElement | null) => {
+    if (!el || !el.parentElement) {
+      return;
+    }
+    el.parentElement.scrollTo(0, el.scrollHeight);
+    setIsAtBottom(true);
+  }
+  
+  const checkIsAtBottom = (current: HTMLDivElement): boolean => {
+    if (current.parentElement) {
+      return current.scrollHeight <= current.clientHeight
+          || current.scrollHeight - current.clientHeight - current.parentElement.scrollTop < 1
+    }
+    return true;
   }
 
   const handleGlobalKeydown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
-      scrollDown(consoleRef.current)
+      scrollDown(consoleRef.current);
     }
   }
 
@@ -49,13 +48,19 @@ const Console = observer((props: Props) => {
     []
   );
 
+  const { current } = consoleRef;
+  if (current) {
+    const isAtBottomNow = checkIsAtBottom(current);
+    if (isAtBottom !== isAtBottomNow) {
+      setIsAtBottom(isAtBottomNow);
+    }
+  }
+
   useEffect(() => {
-    setTimeout(() => {
-      const { current } = consoleRef;
-      if (current && isAtBottom) {
-        scrollDown(current)
-      }
-    }, 10);
+    const { current } = consoleRef;
+    if (current && isAtBottom) {
+      scrollDown(current);
+    }
   });
 
   return (
@@ -63,7 +68,7 @@ const Console = observer((props: Props) => {
       className={`console hash${consoleCount}`}
       ref={consoleRef}
     >
-      { console.map(
+      { consoleObj.map(
         (line) => line.formatted
       ) }
       {!isAtBottom ? (
