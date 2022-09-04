@@ -13,8 +13,8 @@ import Settings from './common/Settings';
 
 const App = observer(() => {
   const store = useStore();
-  const { loadedFonts, theme } = store.app;
-  const { family } = theme.font;
+  //const { loadedFonts, theme } = store.app;
+  //const { family } = theme.font;
 
   // TODO sprawdzic czemu to nie dziala
   const isCurrentFontLoaded = true
