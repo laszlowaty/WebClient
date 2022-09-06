@@ -33,23 +33,7 @@ const Command = observer((props: Props) => {
 
   // focus on commandline when tab is focused
   const documentVisibility = useDocumentVisibility();
-  useEffect(
-    () => {
-      if (documentVisibility === 'visible') {
-        focusToCmdLine();
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ documentVisibility ]
-  );
-
-  const resetCmdLine = () => {
-    if (cmdRef.current) {
-      cmdRef.current.innerHTML = `<span>${EMPTY_CHAR}</span>`;
-      cursorPos.current = 0;
-    }
-  }
-
+  
   const focusToCmdLine = () => {
     if (cmdRef.current) {
       if (cmdRef.current.innerText === '') {
@@ -57,6 +41,23 @@ const Command = observer((props: Props) => {
       }
       cmdRef.current.focus();
       select(cmdRef.current, {start: cursorPos.current});
+    }
+  }
+
+  useEffect(
+    () => {
+      if (documentVisibility === 'visible') {
+        focusToCmdLine();
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ documentVisibility, focusToCmdLine ]
+  );
+
+  const resetCmdLine = () => {
+    if (cmdRef.current) {
+      cmdRef.current.innerHTML = `<span>${EMPTY_CHAR}</span>`;
+      cursorPos.current = 0;
     }
   }
 
