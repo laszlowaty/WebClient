@@ -1,4 +1,4 @@
-import { observable, action } from "mobx";
+import { makeObservable, observable, action } from "mobx";
 import { DeepPartial, Theme, Themecolor, ThemeFontSettings, Settings } from "./types";
 import * as WebFont from 'webfontloader';
 import merge from 'deepmerge';
@@ -21,12 +21,22 @@ const defaultTheme: Theme = {
 };
 
 class App {
-  @observable theme: Theme = defaultTheme;
-  @observable firstTime: boolean = true;
-  @observable loadedFonts: Array<string> = []; // array of strings like: 'Robot Mono:400'
-  @observable showSettings: boolean = false;
+  theme: Theme = defaultTheme;
+  firstTime: boolean = true;
+  loadedFonts: Array<string> = []; // array of strings like: 'Robot Mono:400'
+  showSettings: boolean = false;
 
   constructor() {
+    makeObservable(this, {
+      theme: observable,
+      firstTime: observable,
+      loadedFonts: observable,
+      showSettings: observable,
+      setThemeColor: action,
+      setThemeFont: action,
+      setFontLoaded: action,
+      toogleSettings: action,
+    });
     // loading fonts
     WebFont.load({
       google: {
@@ -55,26 +65,25 @@ class App {
     this.setThemeFont(this.theme.font);
   }
 
-  @action setThemeColor = (color: Partial<Themecolor>) => {
+  setThemeColor = (color: Partial<Themecolor>) => {
     this.theme = merge<Theme, DeepPartial<Theme>>(this.theme, { color });
     this.updateSettings();
     this.updateTheme(this.theme);
   }
 
-  @action setThemeFont = (font: Partial<ThemeFontSettings>) => {
+  setThemeFont = (font: Partial<ThemeFontSettings>) => {
     this.theme = merge<Theme, DeepPartial<Theme>>(this.theme, { font });
     this.updateSettings();
     this.updateTheme(this.theme);
   }
 
-  @action setFontLoaded = (fontName: string, fontVariant: string) => {
+  setFontLoaded = (fontName: string, fontVariant: string) => {
     this.loadedFonts.push(fontName + ':' + fontVariant.replace('n','') + '00');
   }
 
-  @action toogleSettings = () => {
+  toogleSettings = () => {
     this.showSettings = !this.showSettings;
   }
-
 
   /** Sets colour and theme related variables and styles on document.body */
   updateTheme = (theme: Theme) => {

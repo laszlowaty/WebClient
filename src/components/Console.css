@@ -12,17 +12,6 @@
   text-align: left;
 }
 
-.console::before {
-  content: '';
-  position: absolute;
-  display: block;
-  background: #222;
-  top: 0;
-  left: 0;
-  width: 4px;
-  bottom: 0;
-}
-
 .console code {
   z-index: 2;
   font-weight: 400;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { observable, action } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 
 import Connection from "./Connection";
 import Game from "./Game";
@@ -10,16 +10,20 @@ export class Store {
   game: Game;
   app: App;
 
-  @observable connected: boolean = false;
+  connected: boolean = false;
 
   constructor() {
+    makeObservable(this, {
+      connected: observable,
+      init: action,
+    });
     this.conn = new Connection();
     this.game = new Game();
     this.app = new App();
     this.init();
   }
 
-  @action init = () => {
+  init = () => {
   }
 }
 

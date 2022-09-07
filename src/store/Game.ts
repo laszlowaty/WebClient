@@ -1,25 +1,30 @@
-import { observable, action } from "mobx";
+import { makeObservable, observable, action } from "mobx";
 import { MapData } from "./types";
 
 class Game {
-  @observable map: MapData | null = null;
+  map: MapData | null = null;
 
   constructor() {
+    makeObservable(this, {
+      map: observable,
+      fetchMap: action,
+      loadMap: action,
+    });
     this.fetchMap();
   }
 
-  @action fetchMap = () => {
+  fetchMap = () => {
     // import('../common/data/map/world.json')
     //     .then((module) => {
     //         this.loadMap(this.parseMap(module.default as MapData));
     //     });
   }
 
-  @action loadMap = (map: MapData) => {
+  loadMap = (map: MapData) => {
     this.map = map;
   }
 
-  parseMap = (map: MapData): MapData => {
+  parseMudletMap = (map: MapData): MapData => {
     // some data juggling around user data from mudlet maps
     // we store JSON values in there, and want to parse them back to objects
     map.areas.forEach(

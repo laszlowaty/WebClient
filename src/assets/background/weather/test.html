@@ -15,8 +15,28 @@ niebo:
 - brak nieba
 -->
 <html>
-    <div style="position:absolute;top:0;left:0;right:0;height:400px;">
-        <div class="sky"></div>
-    </div>
-</html>
+    <script src="https://code.jquery.com/jquery-3.6.1.slim.min.js" integrity="sha256-w8CvhFs7iHNVUtnSP0YKEg00p9Ih13rlL9zGqvLdePA=" crossorigin="anonymous"></script>
+    <body>
+        <div style="position:absolute;top:0;left:0;right:0;height:400px;">
+            <div class="sky"></div>
+            <div class="sun">sun</div>
+            <div class="moon">moon</div>
+            <div class="cloud1">cl1</div>
+            <div class="cloud2">cl2</div>
+            <div class="cloud3">cl3</div>
+        </div>
+        <div style="position:absolute;bottom:10px;left:10px;right:10px">
+            
+        </div>
+        <script>
+            $('document').read(() => {
+                const $sky = $('sky');
+                let hour = 10;
+                let minute = 30;
+                let hasSky = true;
+                let weatherType = 'clear'; // 'cloudy', 'rain', 'storm'
 
+            })
+        </script>
+    </body>>
+</html>

@@ -9,7 +9,7 @@ const ansiToHTML = (input: string): string => {
   input = escapeCarriageReturn(input);
   return anser.ansiToHtml(input, {
     remove_empty: false,
-    use_classes: false,
+    use_classes: true,
     continue: true,
   });
 }

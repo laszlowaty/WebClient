@@ -3,10 +3,14 @@ import { io, Socket } from 'socket.io-client';
 import he from 'he';
 import Ansi from '../components/common/Ansi';
 import stripAnsi from 'strip-ansi';
+import { parse } from 'query-string';
 
-import { observable, action } from 'mobx';
+import { makeObservable, observable, action } from 'mobx';
 import { ConsoleLine, ConnSettings } from './types';
 import { CONN_STATUS_CODE } from '../common/system';
+
+// eslint-disable-next-line no-restricted-globals
+const pathParams = parse(location.search);
 
 class Connection {
   CONSOLE_LIMIT = 1000;
@@ -16,24 +20,41 @@ class Connection {
    * Therefore we are not observing the log itself, only its count.
    */
   console = new Array<ConsoleLine>();
-  @observable consoleCount = 0;
-  @observable connected: boolean = false;
-  @observable hasPrompt: boolean = false;
-  @observable status: string = '';
-  @observable maskEcho: boolean = false;
+  consoleCount = 0;
+  connected: boolean = false;
+  hasPrompt: boolean = false;
+  status: string = '';
+  maskEcho: boolean = false;
 
-  @observable settings: ConnSettings = {
+
+  settings: ConnSettings = {
     echo: true,
     keepAlive: true,
-    proxyProtocol: 'https',
-    proxyHost: 'killer-mud.pl',
-    proxyPort: '8080',
+    proxyProtocol: (pathParams.proto as string | null) ?? 'https',
+    proxyHost: (pathParams.host as string | null) ?? 'killer-mud.pl',
+    proxyPort: (pathParams.port as string | null) ?? '8080',
   };
 
   sock: Socket | null = null;
   keepAliveTimer: number | null = null;
 
   constructor() {
+    makeObservable(this, {
+      consoleCount: observable,
+      connected: observable,
+      hasPrompt: observable,
+      status: observable,
+      maskEcho: observable,
+      settings: observable,
+      addTelnetLines: action,
+      addEchoLine: action,
+      resetConnection: action,
+      setConnected: action,
+      setStatus: action,
+      sendCmd: action,
+      setKeepAlive: action,
+      addTelnetLine: action,
+    });
     if (this.sock === null) {
       this.sock = io(`${this.settings.proxyProtocol}://${this.settings.proxyHost}:${this.settings.proxyPort}/`);
     }
@@ -74,30 +95,30 @@ class Connection {
     this.setKeepAlive(this.settings.keepAlive);
   }
 
-  @action addTelnetLines = (source: string) => {
+  addTelnetLines = (source: string) => {
     let sourceLines = source.replace(/\r/g, '').split('\n');
     sourceLines.forEach((sourceLine) => {
       this.console.push(this.addTelnetLine(sourceLine));
     });
   }
 
-  @action addEchoLine = (line: string, type: string = 'echo') => {
+  addEchoLine = (line: string, type: string = 'echo') => {
     this.console.push(this.addTelnetLine(line || ' ', type));
   }
 
-  @action resetConnection = () => {
+  resetConnection = () => {
     this.maskEcho = false;
   }
 
-  @action setConnected = (isConnected: boolean) => {
+  setConnected = (isConnected: boolean) => {
     this.connected = isConnected;
   }
 
-  @action setStatus = (status: string) => {
+  setStatus = (status: string) => {
     this.status = status;
   }
 
-  @action sendCmd = (cmd: string) => {
+  sendCmd = (cmd: string) => {
     if (!this.sock) {
       return;
     }
@@ -127,7 +148,7 @@ class Connection {
     this.setKeepAlive(this.settings.keepAlive);
   }
 
-  @action setKeepAlive = (isEnabled: boolean) => {
+  setKeepAlive = (isEnabled: boolean) => {
     this.settings.keepAlive = isEnabled;
     if (isEnabled) {
       if (this.keepAliveTimer) {
@@ -137,7 +158,7 @@ class Connection {
     }
   }
 
-  @action addTelnetLine = (source: string, type: string = 'block'): ConsoleLine => {
+  addTelnetLine = (source: string, type: string = 'block'): ConsoleLine => {
     this.consoleCount++;
     return {
       raw: source,

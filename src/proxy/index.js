@@ -2,8 +2,8 @@
 
 const conf = {
   telnet: {
-    host: 'killer-mud.pl',
-    port: 4004,
+    host: 'mud.barsawia.pl',
+    port: 23,
   },
   web: {
     port: 8080,

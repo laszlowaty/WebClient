@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import select from 'selection-range';
 import { useDocumentVisibility } from '../common/hooks';
 
@@ -34,7 +34,14 @@ const Command = observer((props: Props) => {
   // focus on commandline when tab is focused
   const documentVisibility = useDocumentVisibility();
   
-  const focusToCmdLine = () => {
+  const resetCmdLine = useCallback(() => {
+    if (cmdRef.current) {
+      cmdRef.current.innerHTML = `<span>${EMPTY_CHAR}</span>`;
+      cursorPos.current = 0;
+    }
+  }, [cmdRef, cursorPos]);
+
+  const focusToCmdLine = useCallback(() => {
     if (cmdRef.current) {
       if (cmdRef.current.innerText === '') {
         resetCmdLine()
@@ -42,7 +49,7 @@ const Command = observer((props: Props) => {
       cmdRef.current.focus();
       select(cmdRef.current, {start: cursorPos.current});
     }
-  }
+  }, [ cmdRef, cursorPos, resetCmdLine ]);
 
   useEffect(
     () => {
@@ -50,16 +57,8 @@ const Command = observer((props: Props) => {
         focusToCmdLine();
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [ documentVisibility, focusToCmdLine ]
   );
-
-  const resetCmdLine = () => {
-    if (cmdRef.current) {
-      cmdRef.current.innerHTML = `<span>${EMPTY_CHAR}</span>`;
-      cursorPos.current = 0;
-    }
-  }
 
   const selectAllCmdLine = () => {
     const selection = document.getSelection();
@@ -87,12 +86,12 @@ const Command = observer((props: Props) => {
     },0);
   }
 
-  const checkCmdLineForEmptyIssue = () => {
+  const checkCmdLineForEmptyIssue = useCallback(() => {
     // cleaning any remains of HTML tag if the cmd line text is empty
     if (cmdRef.current && cmdRef.current.innerText.replace(/\n\r/g, '') === '') {
       resetCmdLine();
     }
-  }
+  }, [cmdRef, resetCmdLine])
 
   const cleanUpCmd = (cmd: string): string => {
     return cmd.replace(EMPTY_CHAR, '').replace(/\n\r/g, ' ');
@@ -107,7 +106,7 @@ const Command = observer((props: Props) => {
   }
 
   // key pressed anywhere in the app should be redirected to command line
-  const handleGlobalKeydown = (event: KeyboardEvent) => {
+  const handleGlobalKeydown = useCallback((event: KeyboardEvent) => {
     const isCtrlPressed = (event: KeyboardEvent) => {
       return ['Control', 'Meta'].includes(event.key) || event.ctrlKey || event.metaKey;
     }
@@ -119,7 +118,7 @@ const Command = observer((props: Props) => {
         cmdRef.current.dispatchEvent(newEvent);
       }
     }
-  }
+  }, [ focusToCmdLine ]);
 
   // only run once on component mount
   useEffect(
@@ -131,8 +130,7 @@ const Command = observer((props: Props) => {
         focusToCmdLine();
       }, 100);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [ checkCmdLineForEmptyIssue, handleGlobalKeydown, focusToCmdLine ]
   );
 
   useEffect(
@@ -151,7 +149,7 @@ const Command = observer((props: Props) => {
         cmdRef.current.innerHTML = cmdRef.current.innerText;
       }
     },
-    [ maskEcho ]
+    [ maskEcho, focusToCmdLine, resetCmdLine ]
   );
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
