@@ -1,7 +1,7 @@
 
 MUD Web Client for http://www.killer-mud.pl/
 
-To run with your game:
+**To compile it to run with other MUD games:**
 
 Edit settings in the `/src/store/Connection.tsx`
 
@@ -30,4 +30,4 @@ The compiled web client will be in the "build" folder.
 
 ---
 
-Or, if the above is a problem, you can just take the current "build" folder, find the `proxyHost:"killer-mud.pl",proxyPort:"8080"` in one of the JS files and edit it.
+**Or, if that is too complicated, you can just take the current "build" folder, find the `proxyHost:"killer-mud.pl",proxyPort:"8080"` in one of the JS files and edit it.**
