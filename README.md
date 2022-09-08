@@ -15,13 +15,16 @@ Follow [this readme file](https://github.com/KillerMUD-pl/WebClient/tree/master/
 
 ### Method 1: Using prepared build files
 
-Copy the files from the `build` folder to a web server. The `index.html` file takes parameters of:
+Go to releases page, and grab the latest web-client.zip file
+Copy the files from the zip file to folder on a web server.
+
+The `index.html` file takes parameters of:
 - `host` - the hostname where the proxy is located
 - `port` - (optional) the port of the proxy, default: 8080
 - `proto` - (optional) the protocol to use, default: https, possible: http, https
 
 Example steps to implement:
-- copy the build files to a folder in webserver, for example: `http://www.my-awesome-game.net/client`
+- unzip the webclient.zip to a folder in webserver, for example: `http://www.my-awesome-game.net/client`
 - open the `http://my-awesome-mud.net/client/index.html?host=mud.my-awesome.net`
 - this will open a Web Client that will try to connect to a proxy running on `mud.my-awesome.net`, on port 8080, using HTTPS protocol
 
