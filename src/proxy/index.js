@@ -15,6 +15,17 @@ const express = require('express');
 const socketIo = require('socket.io');
 const net = require('net');
 const iconv = require('iconv-lite');
+
+// Uncomments the block below to enable HTTPS 
+/*
+const https = require('https');
+const keys = {
+  key: fs.readFileSync('/path/to/your/keys/privkey.pem'),
+  cert: fs.readFileSync('/path/to/your/keys/fullchain.pem')
+};
+*/
+
+// Comment out if you are using HTTPS
 const http = require('http');
 
 class Proxy {
@@ -193,6 +204,10 @@ class Proxy {
 
 const app = express();
 
+// Uncomments the below to enable HTTPS 
+//const server = https.createServer(keys, app);
+
+// Comment out if you are using HTTPS
 const server = http.createServer(app);
 
 server.listen(conf.web.port, function() {
