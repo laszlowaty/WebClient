@@ -1,24 +1,41 @@
 
 MUD Web Client for http://www.killer-mud.pl/
 
-**To compile it to run with other MUD games:**
+# Usage
 
-Edit settings in the `/src/store/Connection.tsx`
+## Proxy
+
+The web browser itself cannot talk over telnet, so this project provides a simple passthru proxy that has to run on some server (preferably the same server that hosts the game, for better latency).
+
+Follow this readme file to install the proxy component.
+
+## Web Client
+
+### Method 1: Using prepared build files
+
+Copy the files from the `build` folder to a web server. The `index.html` file takes parameters of:
+- `host` - the hostname where the proxy is located
+- `port` - (optional) the port of the proxy, default: 8080
+- `proto` - (optional) the protocol to use, default: https, possible: http, https
+
+Example steps to implement:
+- copy the build files to a folder in webserver, for example: `http://www.my-awesome-game.net/client`
+- open the `http://my-awesome-mud.net/client/index.html?host=mud.my-awesome.net`
+- this will open a Web Client that will try to connect to a proxy running on `mud.my-awesome.net`, on port 8080, using HTTPS protocol
+
+### Method 2: Compile your own copy of Web Client
+
+Edit settings in the `/src/store/Connection.tsx`:
 
 ```
-  @observable settings: ConnSettings = {
+  settings: ConnSettings = {
     echo: true,
     keepAlive: true,
-    proxyProtocol: 'https',
-    proxyHost: 'killer-mud.pl',
-    proxyPort: '8080',
+    proxyProtocol: 'https',     // use 'http' or 'https'
+    proxyHost: 'killer-mud.pl', // enter the proxy hostname here
+    proxyPort: '8080',          // enter the proxy port here
   };
-  ```
-
-Change the "proxy" config to your proxy address and port.
-The proxy app that needs to run on your server is in `/src/proxy`, refer to its README.md file.
-
-Once the config is edited, you need to build the app. 
+```
 
 Install node.js on your computer (https://nodejs.org/en/download/), then run these commands in node.js shell, inside the project folder:
 ```
@@ -26,8 +43,4 @@ npm install
 npm run build
 ```
 
-The compiled web client will be in the "build" folder.
-
----
-
-**Or, if that is too complicated, you can just take the current "build" folder, find the `proxyHost:"killer-mud.pl",proxyPort:"8080"` in one of the JS files and edit it.**
+The compiled web client will be placed in the "build" folder.
