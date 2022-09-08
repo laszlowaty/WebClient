@@ -1,5 +1,7 @@
 
-MUD Web Client for http://www.killer-mud.pl/
+MUD Web Client used on http://www.killer-mud.pl/
+
+If you are a MUD developer/admin, you can grab a copy of this repo and follow the steps below your own copy of a Web Client that players can use to connect to your game.
 
 # Usage
 
@@ -7,7 +9,7 @@ MUD Web Client for http://www.killer-mud.pl/
 
 The web browser itself cannot talk over telnet, so this project provides a simple passthru proxy that has to run on some server (preferably the same server that hosts the game, for better latency).
 
-Follow this readme file to install the proxy component.
+Follow [this readme file](https://github.com/KillerMUD-pl/WebClient/tree/master/src/proxy#readme) to install the proxy component.
 
 ## Web Client
 
