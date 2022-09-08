@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import select from 'selection-range';
-import { useDocumentVisibility } from '../common/hooks';
 
 import './Command.css';
 
@@ -30,9 +29,6 @@ const Command = observer((props: Props) => {
   // store variables
   const store = useStore();
   const { maskEcho } = store.conn;
-
-  // focus on commandline when tab is focused
-  const documentVisibility = useDocumentVisibility();
   
   const resetCmdLine = useCallback(() => {
     if (cmdRef.current) {
@@ -53,11 +49,11 @@ const Command = observer((props: Props) => {
 
   useEffect(
     () => {
-      if (documentVisibility === 'visible') {
+      if (cmdRef.current) {
         focusToCmdLine();
       }
     },
-    [ documentVisibility, focusToCmdLine ]
+    [ cmdRef, focusToCmdLine ]
   );
 
   const selectAllCmdLine = () => {

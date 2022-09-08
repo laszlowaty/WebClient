@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react';
 import { useStore } from '../store';
 
@@ -13,13 +13,13 @@ const Console = observer((props: Props) => {
   const consoleRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   
-  const scrollDown = (el: HTMLDivElement | null) => {
+  const scrollDown = useCallback((el: HTMLDivElement | null) => {
     if (!el || !el.parentElement) {
       return;
     }
     el.parentElement.scrollTo(0, el.scrollHeight);
     setIsAtBottom(true);
-  }
+  }, []);
   
   const checkIsAtBottom = (current: HTMLDivElement): boolean => {
     if (current.parentElement) {
@@ -29,23 +29,22 @@ const Console = observer((props: Props) => {
     return true;
   }
 
-  const handleGlobalKeydown = (event: KeyboardEvent) => {
+  const handleGlobalKeydown = useCallback((event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       scrollDown(consoleRef.current);
     }
-  }
+  }, [scrollDown]);
 
-  const handleNeedScrollEvent = (event: Event) => {
+  const handleNeedScrollEvent = useCallback((event: Event) => {
     scrollDown(consoleRef.current)
-  }
+  }, [scrollDown]);
 
   useEffect(
     () => {
       document.addEventListener('keydown', handleGlobalKeydown as EventListener, false);
       document.addEventListener('needsScroll', handleNeedScrollEvent as EventListener, false);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [handleGlobalKeydown, handleNeedScrollEvent]
   );
 
   const { current } = consoleRef;
@@ -56,12 +55,13 @@ const Console = observer((props: Props) => {
     }
   }
 
+  // scroll down after receiving lines
   useEffect(() => {
     const { current } = consoleRef;
     if (current && isAtBottom) {
       scrollDown(current);
     }
-  });
+  }, [scrollDown, isAtBottom, consoleCount]);
 
   return (
     <div
