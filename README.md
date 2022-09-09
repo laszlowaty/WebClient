@@ -15,7 +15,7 @@ Follow [this readme file](https://github.com/KillerMUD-pl/WebClient/tree/master/
 
 ### Method 1: Using prepared build files
 
-Go to releases page, and grab the latest web-client.zip file
+Go to [latest release page](https://github.com/KillerMUD-pl/WebClient/releases/tag/v0.1.0), and grab the `web-client.zip` file
 Copy the files from the zip file to folder on a web server.
 
 The `index.html` file takes parameters of:
