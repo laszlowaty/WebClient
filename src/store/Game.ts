@@ -3,32 +3,43 @@ import { MapData } from "./types";
 
 class Game {
   map: MapData | null = null;
+  areas: { idx: number, name: string }[] = [];
+  selectedArea: number|null = null;
 
   constructor() {
     makeObservable(this, {
       map: observable,
+      areas: observable,
+      selectedArea: observable,
       fetchMap: action,
       loadMap: action,
+      selectArea: action,
     });
     this.fetchMap();
   }
 
   fetchMap = () => {
-    // import('../common/data/map/world.json')
-    //     .then((module) => {
-    //         this.loadMap(this.parseMap(module.default as MapData));
-    //     });
+    import('../assets/map.json')
+      .then((module) => {
+          this.loadMap(this.parseMudletMap(module.default as MapData));
+      });
   }
 
   loadMap = (map: MapData) => {
     this.map = map;
   }
 
+  selectArea = (areaName: number) => {
+    this.selectedArea = areaName;
+  }
+
   parseMudletMap = (map: MapData): MapData => {
     // some data juggling around user data from mudlet maps
     // we store JSON values in there, and want to parse them back to objects
+    const foundAreas: { idx: number, name: string }[] = [];
     map.areas.forEach(
       (area, areaIdx) => {
+        foundAreas.push({ idx: area.id, name: area.name });
         area.rooms.forEach(
           (room, roomIdx) => {
             if (room.userData) {
@@ -64,6 +75,7 @@ class Game {
         )
       }
     );
+    this.areas = foundAreas;
     return map;
   } 
 }

@@ -10,6 +10,7 @@ import { observer } from 'mobx-react';
 
 import './App.css';
 import Settings from './common/Settings';
+import MudMap from './panels/map/Map';
 
 const App = observer(() => {
   const store = useStore();
@@ -41,7 +42,7 @@ const App = observer(() => {
               <Console />
             </div>
             <div className="rightSide">
-              { /* <MudMap /> */ }
+              <MudMap />
               <Settings />
             </div>
           </div>

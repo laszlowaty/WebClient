@@ -1,37 +1,48 @@
-import React, { Component } from 'react';
-import { Map, View } from 'ol';
+import React, { createRef, RefObject, useEffect, useRef } from 'react';
+import { CRS, Map } from 'leaflet';
 import { observer } from 'mobx-react';
+import { useStore } from '../../../store';
+import { renderMapToleaflet } from './renderer/main';
 
-import 'ol/ol.css';
 import './Map.css';
+import 'leaflet/dist/leaflet.css';
 
 type Props = {}
 
-class MudMap extends Component<Props> {
-  map: Map | null;
+const MudMap = observer((props: Props) => {
+  let map = useRef<Map | null>(null);
+  const mapRef: RefObject<HTMLDivElement> = createRef();
+  const store = useStore();
+  const { game } = store;
+  const { map: mapData, areas, selectedArea, selectArea } = game;
 
-  constructor(props: Props) {
-    super(props);
-    this.map = null;
-  }
-  componentDidMount() {
-    console.log('initialize map');
-    this.map = new Map({
-      view: new View({
-        center: [0, 0],
-        zoom: 1
-      }),
-      layers: [
-      ],
-      target: 'map'
-    });
-  }
-  render() {
-    console.log('drawing map');
-    return (
-      <div id="map"></div>
-    )
-  }
-}
+  useEffect(() => {
+    if (!map.current && mapRef.current) {
+      map.current = new Map(mapRef.current, {
+        crs: CRS.Simple,
+        preferCanvas: true,
+        zoomSnap: 0.1,
+      })
+    }
+  }, [ mapRef, map ]);
 
-export default observer(MudMap);
+  useEffect(() => {
+    if (map.current && selectedArea !== null && mapData && mapData.areas[selectedArea]) {
+      renderMapToleaflet(map.current, mapData.areas[selectedArea]);
+    }
+  }, [ mapData, selectedArea ])
+
+  return <div id="mapContainer">
+    <div id="areas">
+    {areas.map((area) => (
+      <button
+        className={area.idx === selectedArea ? 'selected' : ''}
+        onClick={() => selectArea(area.idx)}
+      >{area.name}</button>
+    ))}
+    </div>
+    <div id="map" ref={mapRef} />
+  </div>
+});
+
+export default MudMap;

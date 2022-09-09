@@ -1,5 +1,9 @@
 div#map {
   border: 1px solid #444;
   width: 50vh;
-  height: 50%;
+  height: 50vh;
+}
+
+div#map .mapBox {
+  border: 1px solid red;
 }
