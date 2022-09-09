@@ -146,6 +146,9 @@ class Connection {
     });
 
     this.setKeepAlive(this.settings.keepAlive);
+    if (this.maskEcho) {
+      this.maskEcho = false;
+    }
   }
 
   setKeepAlive = (isEnabled: boolean) => {
