@@ -1,5 +1,5 @@
 import React, { createRef, RefObject, useEffect, useRef } from 'react';
-import { CRS, Map } from 'leaflet';
+import { CRS, LatLngBoundsExpression, Map } from 'leaflet';
 import { observer } from 'mobx-react';
 import { useStore } from '../../../store';
 import { renderMapToleaflet } from './renderer/main';
@@ -22,7 +22,13 @@ const MudMap = observer((props: Props) => {
         crs: CRS.Simple,
         preferCanvas: true,
         zoomSnap: 0.1,
-      })
+        center: [-50,-50],
+        zoom: 1.5,
+        minZoom: 1.5,
+      });
+      const bounds: LatLngBoundsExpression = [[0,0], [10000,10000]];
+      map.current.fitBounds(bounds);
+      map.current.panTo([0, 0]);
     }
   }, [ mapRef, map ]);
 
