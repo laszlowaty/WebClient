@@ -105,7 +105,7 @@ export type MapRoom = {
   id: number,
   coordinates: MapCoordinates,
   environment: number,
-  exists: MapExit[],
+  exits: MapExit[],
   userData?:   MapRoomUserData;
   name?:       string;
   weight?:     number;

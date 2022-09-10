@@ -1,5 +1,5 @@
 import { makeObservable, observable, action } from "mobx";
-import { MapData } from "./types";
+import { MapData, MapExit } from "./types";
 
 class Game {
   map: MapData | null = null;
@@ -70,7 +70,15 @@ class Game {
                     }
                 }
               )
-            }
+                }
+                if (room.exits) {
+                    room.exits.forEach(
+                        (e: MapExit) => {
+                            // @ts-ignore
+                            map.areas[areaIdx].rooms[roomIdx].exits.push(e);
+                        }
+                    )
+                }
           }
         )
       }
