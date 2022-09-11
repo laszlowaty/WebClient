@@ -1,5 +1,6 @@
 import { Map, Polyline, Rectangle, Util, latLng } from "leaflet";
 import { MapArea, MapRoom, MapExit } from "../../../../store/types";
+import { getRoomColorBySector } from "./colors";
 
 const roomMap: {[vnum: number]: Rectangle} = {};
 // Renders the map to leaflet
@@ -21,7 +22,7 @@ export const renderMapToleaflet = (map: Map, area: MapArea) => {
             var firstRoom = roomMap[firstRoomVnum];
             var secondRoom = roomMapIdToRectangle[exit.exitId];
             if (firstRoom && secondRoom) {
-                new Polyline([firstRoom.getCenter(), secondRoom.getCenter()], { color: "black" }).addTo(map);
+                new Polyline([firstRoom.getCenter(), secondRoom.getCenter()], { color: "black", weight: 1 }).addTo(map);
             }
             })
     });
@@ -29,15 +30,17 @@ export const renderMapToleaflet = (map: Map, area: MapArea) => {
 
 const getRoom = (room: MapRoom): Rectangle => {
   const x = room.coordinates[0];
-  const y = room.coordinates[1];
+    const y = room.coordinates[1];
+    var sector = room.userData?.sector?.toString();
+    var roomColor = getRoomColorBySector(sector ? sector : 'wewnatrz');
   return new Rectangle(
     [
       [y, x+0.9],
       [y-0.9, x]
     ],
     {
-      fill: true,
-      fillColor: '#000',
+        fill: true,
+        fillColor: roomColor,
       fillOpacity: 1,
       weight: 5,
       stroke: false
